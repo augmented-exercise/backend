@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def repdetect():
-    f = request.files['']
+    f = request.files['data']
     fname = secure_filename(f.filename)
     f.save(fname)
     refs = {
@@ -19,14 +19,16 @@ def repdetect():
         "TRI":None,
         "BI":None
     }
-    reference = refs[request.form['exercise']]
+    exercise = request.form['exercise']
+    reference = refs[exercise]
     print(reference)
     if reference:
         peaks = divide(fname, reference)
         # Return a list of how good each exercise was
         return jsonify({
-            'Exercise':None,
+            'Exercise':exercise,
             "reps":len(peaks),
-            "Form":None
+            "Form":["good"]*len(peaks),
         })
     return "Error"
+    
