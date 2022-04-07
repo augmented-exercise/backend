@@ -26,12 +26,11 @@ def import_data(file_name : str):
         gyro_data = []
         for line in file:
             vals = line.split(',')
+            if len(vals) < 5: # Invalid
+                continue
             data_type = vals[0]
             time = int(vals[1])
             data = [float(_) for _ in vals[2:]]
-            # Error detection
-            if len(data) != 3:
-                raise DataError("Not enough data points")
             # Popula
             if data_type == 'a':
                 accel_indices.append(time)
@@ -166,7 +165,11 @@ def check(file, reference):
     Compute cross correlation for a single file with given reference
     """
     # Read the data in from the raw file
-    accel, gyro = import_data(file)
+    try:
+        accel, gyro = import_data(file)
+    except DataError as e:
+        print(e)
+        return None, None
     preprocess_data(accel, gyro)
     accel = linear_interpolate(accel)
     gyro = linear_interpolate(gyro)
@@ -182,5 +185,6 @@ def check(file, reference):
 
 
 def divide(filename : str, reference : str):
+    print("Dividing")
     cross_corr, peaks = check(filename, reference)
     return peaks
