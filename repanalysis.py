@@ -7,6 +7,7 @@ import scipy.signal
 import scipy.fft
 import math
 
+from formanalysis import analyze_test_data
 # Error
 class DataError(Exception):
     """
@@ -180,11 +181,33 @@ def check(file, reference):
 
     # Find peaks in cross_corr
     peaks, _ = scipy.signal.find_peaks(cross_corr, distance=100, prominence=0.2)
+    #print(accel)
+    accel_list =[]
+    for idx,val in enumerate(peaks):
+        if (idx != 0):
+            split_df = accel[peaks[idx-1]:peaks[idx]]
+            split_df = split_df.reset_index(level=0)
+            split_df['time'] = split_df['time'].astype(str)
+            split_df['time'] = split_df['time'].str[13:].astype(float)
+            start_time = split_df['time'][0]
+            split_df['time'] = split_df['time'].subtract(start_time)
+            if (len(split_df.index) > 300):
+                split_df = split_df[0:300]
+            accel_list.append(split_df)
+    split_df = accel[peaks[-1]:min(peaks[-1]+250,len(accel))]
+    split_df = split_df.reset_index(level=0)
+    split_df['time'] = split_df['time'].astype(str)
+    split_df['time'] = split_df['time'].str[13:].astype(float)
+    start_time = split_df['time'][0]
+    split_df['time'] = split_df['time'].subtract(start_time)
+    accel_list.append(split_df)
+    form_classes = analyze_test_data(accel_list)  
 
-    return cross_corr, peaks
+    return cross_corr, peaks, form_classes
 
 
 def divide(filename : str, reference : str):
     print("Dividing")
-    cross_corr, peaks = check(filename, reference)
-    return peaks
+    cross_corr, peaks, form_classes = check(filename, reference)
+
+    return peaks, form_classes

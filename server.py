@@ -23,17 +23,17 @@ def repdetect():
     reference = refs[exercise]
     print(reference)
     if reference:
-        peaks = divide(fname, reference)
+        peaks, form_classes = divide(fname, reference)
         status = "Ok"
         # Return a list of how good each exercise was
         return jsonify({
             'Exercise':exercise,
             "reps":len(peaks),
-            "Form":["good"]*len(peaks),
+            "Form":form_classes,
             "status":status
         })
     return "Error"
     
 @app.errorhandler(Exception)
 def handle_bad_request(e):
-    return f"Internal server error!:\n{str(e)}", 500
+   return f"Internal server error!:\n{str(e)}", 500
